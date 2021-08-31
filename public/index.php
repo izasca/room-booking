@@ -25,7 +25,8 @@ $app->add(function ($req, $res, $next) {
 $app->get('/', function(Request $request, Response $response) {
   // $this->render('myTemplate.php', array('id' => $id));
   //$this->render('../src/View/index.php');
-  return $response->write("This is my about page");
+  //return $response->write("This is my about page");
+  return $response->withRedirect('dashboard');
 });
 
 // 1. Ability to create a room with an id, name, number, and occupant
