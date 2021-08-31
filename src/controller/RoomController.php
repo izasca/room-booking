@@ -6,6 +6,8 @@ use izasca\RoomBooking\Model\Room;
 
 class RoomController {
 
+  protected $dbh;
+
   /**
    * __construct
    */
@@ -13,126 +15,109 @@ class RoomController {
   }
 
   /**
+   * setDBHandler
+   */
+  public function setDBHandler ($dbHandler) {
+    $this->dbh = $dbHandler;
+  }
+
+  /**
    * createRoom
+   * 
+   * @return room_id
    */
   public function createRoom($room_atr) {
     $room = new Room();
     $room->fill($room_atr);
+    $room_id = -1;
 
-    /*
-    $sql = "INSERT INTO customers (first_name,last_name,phone,email,address,city,state) VALUES
-    (:first_name,:last_name,:phone,:email,:address,:city,:state)";
+    $insert_sql = 'INSERT INTO rooms (name, number, occupant) values (:name, :number, :occupant)';
+    try {
+      $insert = $this->dbh->prepare($insert_sql);
+      $insert->bindParam(':name', $room->name);
+      $insert->bindParam(':number', $room->number);
+      $insert->bindParam(':occupant', $room->occupant);
+      $insert->execute();
+      $room_id = $this->dbh->lastInsertId();
 
-    try{
-        // Get DB Object
-        $db = new db();
-        // Connect
-        $db = $db->connect();
-
-        $stmt = $db->prepare($sql);
-
-        $stmt->bindParam(':first_name', $first_name);
-        $stmt->bindParam(':last_name',  $last_name);
-        $stmt->bindParam(':phone',      $phone);
-        $stmt->bindParam(':email',      $email);
-        $stmt->bindParam(':address',    $address);
-        $stmt->bindParam(':city',       $city);
-        $stmt->bindParam(':state',      $state);
-
-        $stmt->execute();
-
-        echo '{"notice": {"text": "Customer Added"}';
-
-    } catch(PDOException $e){
-        echo '{"error": {"text": '.$e->getMessage().'}';
+    } catch(\PDOException $e) {
+      echo '{"error": {"text": '.$e->getMessage().'}';
     }
-    */
-        
+
+    return ($room_id);        
   }
 
   /**
    * updateOccupant
+   * 
+   * @return boolean
    */
   public function updateOccupant($room_atr) {
-    // mockup
-    return true;
+    $update_sql = 'UPDATE rooms SET occupant = :occupant WHERE id = :room_id';
+    try {
+      $update = $this->dbh->prepare($update_sql);
+      $update->bindParam(':occupant', $room_atr['occupant']);
+      $update->bindParam(':room_id', $room_atr['id']);
+      $update->execute();
 
-    // TODO implement
+    } catch(\PDOException $e) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
    * deleteRoom
    */
   public function deleteRoom($room_id) {
-    // mockup
-    return false;
+    $delete_sql = 'DELETE FROM rooms WHERE id = :room_id';
+    try {
+      $delete = $this->dbh->prepare($delete_sql);
+      $delete->bindParam(':room_id', $room_id);
+      $delete->execute();
 
-    // TODO implement
+    } catch(\PDOException $e) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
    * loadAll
    */
   public function loadAll() {
-    // mockup
-    $rooms = array();
-
-    $room = new Room();
-    $room->fill(['id' => 1, 'name' => 'Room 01', 'number' => 1, 'occupant' => 'Javier']);
-    array_push($rooms, $room);
-
-    $room = new Room();
-    $room->fill(['id' => 2, 'name' => 'Room 02', 'number' => 2, 'occupant' => 'Santi']);
-    array_push($rooms, $room);
-
-    // TODO implement
-
-    /*
-    $sql = "SELECT * FROM customers";
-
-    try{
-        // Get DB Object
-        $db = new db();
-        // Connect
-        $db = $db->connect();
-
-        $stmt = $db->query($sql);
-        $customers = $stmt->fetchAll(PDO::FETCH_OBJ);
-        $db = null;
-        echo json_encode($customers);
-    } catch(PDOException $e){
+    $select_sql = 'SELECT * from rooms order by number';
+    try {
+      $select = $this->dbh->query($select_sql);
+      $select->execute();
+      $rooms = $select->fetchAll(\PDO::FETCH_OBJ);
+    } catch(\PDOException $e) {
         echo '{"error": {"text": '.$e->getMessage().'}';
     }
-    */
 
     return $rooms;
   }
 
   /**
    * loadByID
+   * 
+   * @return izasca\RoomBooking\Model\Room
    */
   public function loadByID($room_id) {
-    // mockup
-    $r = new Room();
-    $r->fill(['id' => 1, 'name' => 'Room 01', 'number' => 1, 'occupant' => 'Nobody']);
-    return ($r);
-
-    // TODO implement
-    /*
-    $sql = '
-    select * from rooms r
-    where r.id = :room_id
-    ';
-    $res = $this->dbh->prepare($sql);
-    $res->bindParam(':room_id', $room_id);
-    $res->execute();
-
-    if ($row = $res->fetch()) {
-      $this->list[] = $row;
+    $room = new Room();
+    $select_sql = 'SELECT * from rooms where id = :room_id order by number, id';
+    try {
+      $select = $this->dbh->prepare($select_sql);
+      $select->bindParam(':room_id', $room_id);
+      $select->execute();
+      $room->fill($select->fetch(\PDO::FETCH_ASSOC));
+    } catch(\PDOException $e) {
+      return null;
     }
 
-    return $row;
-    */
-  }
+    return $room;
+ }
 
 }
