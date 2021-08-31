@@ -22,13 +22,6 @@ $app->add(function ($req, $res, $next) {
     ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 });
 
-$app->get('/', function(Request $request, Response $response) {
-  // $this->render('myTemplate.php', array('id' => $id));
-  //$this->render('../src/View/index.php');
-  //return $response->write("This is my about page");
-  return $response->withRedirect('dashboard');
-});
-
 // 1. Ability to create a room with an id, name, number, and occupant
 // POST .../api/rooms?name=Room 01&number=1&occupant=Pablo
 $app->post('/api/rooms', function(Request $request, Response $response) use ($rc) {
