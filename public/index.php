@@ -1,11 +1,9 @@
 <?php
-require '../src/app/init.php';
+require '../src/App/init.php';
 
 use Slim\Http\Request as Request;
 use Slim\Http\Response as Response;
-
 use izasca\RoomBooking\Controller\RoomController;
-// require '../src/config/db.php';
 
 $app = new \Slim\App();
 
@@ -16,13 +14,6 @@ $app->options('/{routes:.+}', function ($request, $response, $args) {
   return $response;
 });
 
-$app->get('/hello/{name}', function (Request $request, Response $response) {
-    $name = $request->getAttribute('name');
-    $response->getBody()->write("Hello, $name");
-
-    return $response;
-});
-
 $app->add(function ($req, $res, $next) {
   $response = $next($req, $res);
   return $response
@@ -30,6 +21,7 @@ $app->add(function ($req, $res, $next) {
     ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
     ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 });
+
 
 // 1. Ability to create a room with an id, name, number, and occupant
 // POST .../api/rooms?name=Room 01&number=1&occupant=Pablo
